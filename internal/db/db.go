@@ -66,11 +66,11 @@ func StartMigration(db *sql.DB) error {
 		driver,
 	)
 	if err != nil {
-		log.Error(err)
+		log.Error(fmt.Sprintf("New Migrate instance error: %s", err))
 	}
 	err = migrate.Up()
 	if err != nil {
-		log.Error(err)
+		log.Error(fmt.Sprintf("Migration up error: %s", err))
 	}
 	return nil
 }
