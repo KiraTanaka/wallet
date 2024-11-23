@@ -52,7 +52,7 @@ func GetInvalidOperationTypeError() HttpError {
 // 404 (StatusNotFound)
 
 func GetWalletNotFoundError() HttpError {
-	log.Error(WalletNotFoundError.Reason)
+	log.Error(WalletNotFoundError)
 	return WalletNotFoundError
 }
 

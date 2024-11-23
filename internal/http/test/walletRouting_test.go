@@ -23,7 +23,10 @@ var wallet db.Wallet = db.Wallet{Id: "b0e82dfa-f37e-4da9-8c38-f3fdc9ae881d",
 	Balance: 10}
 
 func (w *MockWalletDB) CheckExists(walletId string) error {
-	return nil
+	if wallet.Id == walletId {
+		return nil
+	}
+	return db.ErrorNoRows
 }
 
 func (w *MockWalletDB) Get(walletId string) (*db.Wallet, error) {
@@ -72,10 +75,12 @@ func TestAddWalletOperation(t *testing.T) {
 	mw := &MockWalletDB{}
 	mwo := &MockWalletOperationDB{}
 	testCases := []struct {
+		name            string
 		walletOperation db.WalletOperation
 		expected        float64
 	}{
 		{
+			name: "deposit operation",
 			walletOperation: db.WalletOperation{
 				WalletId:      "b0e82dfa-f37e-4da9-8c38-f3fdc9ae881d",
 				OperationType: "DEPOSIT",
@@ -83,14 +88,23 @@ func TestAddWalletOperation(t *testing.T) {
 			},
 			expected: 20.0,
 		},
+		{
+			name: "withraw operation",
+			walletOperation: db.WalletOperation{
+				WalletId:      "b0e82dfa-f37e-4da9-8c38-f3fdc9ae881d",
+				OperationType: "WITHDRAW",
+				Amount:        10,
+			},
+			expected: 10.0,
+		},
 	}
+
+	walletHandler := my_http.WalletHandler{Wallet: mw, WalletOperation: mwo}
+	router.POST("/", walletHandler.AddWalletOperation)
 
 	for _, testCase := range testCases {
 
 		jsonValue, _ := json.Marshal(testCase.walletOperation)
-
-		walletHandler := my_http.WalletHandler{Wallet: mw, WalletOperation: mwo}
-		router.POST("/", walletHandler.AddWalletOperation)
 
 		req, _ := http.NewRequest("POST", "/", bytes.NewBuffer(jsonValue))
 		w := httptest.NewRecorder()
