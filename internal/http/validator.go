@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func CheckWallet(model *db.WalletModel, walletId string) errors.HttpError {
+func CheckWallet(model db.WalletModel, walletId string) errors.HttpError {
 	if walletId == "" {
 		return errors.GetWalletIdNotPassedError()
 	}
@@ -15,11 +15,11 @@ func CheckWallet(model *db.WalletModel, walletId string) errors.HttpError {
 	if err != nil {
 		return errors.GetInvalidWalletIdError()
 	}
-	/*err = model.CheckExists(walletId)
+	err = model.CheckExists(walletId)
 	if err == db.ErrorNoRows {
 		return errors.GetWalletNotFoundError()
 	} else if err != nil {
 		return errors.GetInternalServerError(err)
-	}*/
+	}
 	return errors.HttpError{}
 }

@@ -13,14 +13,18 @@ type WalletOperation struct {
 	Amount        float64 `json:"amount" db:"amount" building:"required"`
 }
 
-type WalletOperationModel struct {
+type WalletOperationDb struct {
 	Db *sqlx.DB
+}
+
+type WalletOperationModel interface {
+	Add(*WalletOperation) error
 }
 
 //go:embed queries/walletOperation/add.sql
 var addQuery string
 
-func (wo *WalletOperationModel) Add(operation *WalletOperation) error {
+func (wo *WalletOperationDb) Add(operation *WalletOperation) error {
 	var lastInsertId string
 	tx, err := wo.Db.Beginx()
 	if err != nil {

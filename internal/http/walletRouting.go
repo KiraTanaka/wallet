@@ -12,7 +12,7 @@ import (
 
 type WalletHandler struct {
 	Wallet          db.WalletModel
-	WalletOperation *db.WalletOperationModel
+	WalletOperation db.WalletOperationModel
 }
 
 func InitWalletRoutes(routes *gin.RouterGroup, walletHandler *WalletHandler) {
@@ -20,7 +20,7 @@ func InitWalletRoutes(routes *gin.RouterGroup, walletHandler *WalletHandler) {
 	//GET
 	tenderRoutes.GET("/:walletId", walletHandler.GetWallet)
 	//POST
-	/*tenderRoutes.POST("/", walletHandler.addWalletOperation)*/
+	tenderRoutes.POST("/", walletHandler.AddWalletOperation)
 }
 
 func (w *WalletHandler) GetWallet(c *gin.Context) {
@@ -46,8 +46,7 @@ func (w *WalletHandler) GetWallet(c *gin.Context) {
 	c.JSON(http.StatusOK, wallet)
 }
 
-/*
-func (w *WalletHandler) addWalletOperation(c *gin.Context) {
+func (w *WalletHandler) AddWalletOperation(c *gin.Context) {
 	log.Info("Чтение параметров")
 	walletOperation := db.WalletOperation{}
 	err := c.BindJSON(&walletOperation)
@@ -56,15 +55,15 @@ func (w *WalletHandler) addWalletOperation(c *gin.Context) {
 		return
 	}
 
-	log.Info("Валидация")
+	/*log.Info("Валидация")
 	errHttp := CheckWallet(w.wallet, walletOperation.WalletId)
 	if !errHttp.IsEmpty() {
 		c.AbortWithStatusJSON(errHttp.SeparateCode())
 		return
-	}
+	}*/
 
-	log.Info("Добавление")
-	err = w.walletOperation.Add(&walletOperation)
+	log.Info("Добавление операции")
+	err = w.WalletOperation.Add(&walletOperation)
 	if err != nil {
 		c.AbortWithStatusJSON(errors.GetInternalServerError(err).SeparateCode())
 		return
@@ -76,12 +75,21 @@ func (w *WalletHandler) addWalletOperation(c *gin.Context) {
 		amount = -amount
 	}
 
-	err = w.wallet.ChangeBalance(walletOperation.WalletId, amount)
+	log.Info("Изменение баланса")
+
+	err = w.Wallet.ChangeBalance(walletOperation.WalletId, amount)
 	if err != nil {
 		c.AbortWithStatusJSON(errors.GetInternalServerError(err).SeparateCode())
 		return
 	}
 
-	c.JSON(http.StatusOK, "OK")
+	log.Info("Чтение данных кошелька")
+
+	wallet, err := w.Wallet.Get(walletOperation.WalletId)
+	if err != nil {
+		c.AbortWithStatusJSON(errors.GetInternalServerError(err).SeparateCode())
+		return
+	}
+
+	c.JSON(http.StatusOK, wallet)
 }
-*/

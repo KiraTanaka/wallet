@@ -17,7 +17,7 @@ import (
 
 type DbModels struct {
 	WalletModel          *WalletDb
-	WalletOperationModel *WalletOperationModel
+	WalletOperationModel *WalletOperationDb
 }
 
 var ErrorNoRows error = sql.ErrNoRows
@@ -41,24 +41,10 @@ func NewConnect(config *config.Configuration) (*DbModels, error) {
 	}
 	log.Info("Connection to the database is completed.")
 
-	err = StartMigration(db.DB)
+	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 	if err != nil {
 		log.Error(err)
 		return &dbModels, err
-	}
-
-	log.Info("Verification and application of missing migrations is completed.")
-
-	dbModels = DbModels{WalletModel: &WalletDb{Db: db},
-		WalletOperationModel: &WalletOperationModel{Db: db}}
-
-	return &dbModels, nil
-}
-
-func StartMigration(db *sql.DB) error {
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
-	if err != nil {
-		return err
 	}
 	migrate, err := migrate.NewWithDatabaseInstance(
 		"file://./migrations",
@@ -72,5 +58,11 @@ func StartMigration(db *sql.DB) error {
 	if err != nil {
 		log.Error(fmt.Sprintf("Migration up error: %s", err))
 	}
-	return nil
+
+	log.Info("Verification and application of missing migrations is completed.")
+
+	dbModels = DbModels{WalletModel: &WalletDb{Db: db},
+		WalletOperationModel: &WalletOperationDb{Db: db}}
+
+	return &dbModels, nil
 }

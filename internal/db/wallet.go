@@ -17,7 +17,9 @@ type WalletDb struct {
 }
 
 type WalletModel interface {
-	Get(walletId string) (*Wallet, error)
+	CheckExists(string) error
+	Get(string) (*Wallet, error)
+	ChangeBalance(string, float64) error
 }
 
 //go:embed queries/wallet/checkExists.sql
